@@ -83,14 +83,14 @@ html_theme = 'pytorch_sphinx_theme'
 html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 html_theme_options = {
     'logo_url':
-    'https://mmsegmentation.readthedocs.io/zh-CN/latest/',
+        'https://mmsegmentation.readthedocs.io/zh-CN/latest/',
     'menu': [
         {
             'name':
-            '教程',
+                '教程',
             'url':
-            'https://github.com/open-mmlab/mmsegmentation/blob/master/'
-            'demo/MMSegmentation_Tutorial.ipynb'
+                'https://github.com/open-mmlab/mmsegmentation/blob/master/'
+                'demo/MMSegmentation_Tutorial.ipynb'
         },
         {
             'name': 'GitHub',
@@ -98,7 +98,7 @@ html_theme_options = {
         },
         {
             'name':
-            '上游库',
+                '上游库',
             'children': [
                 {
                     'name': 'MMCV',
@@ -110,7 +110,7 @@ html_theme_options = {
     ],
     # Specify the language of shared menu
     'menu_lang':
-    'cn',
+        'cn',
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

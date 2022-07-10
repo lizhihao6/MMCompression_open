@@ -1,8 +1,6 @@
 import copy
 import os.path as osp
-import tempfile
 
-import mmcv
 import numpy as np
 
 from mmcomp.datasets.pipelines import LoadImageFromFile

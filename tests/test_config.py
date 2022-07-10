@@ -3,7 +3,6 @@ import os
 from os.path import dirname, exists, isdir, join, relpath
 
 from mmcv import Config
-from torch import nn
 
 from mmcomp.models import build_compressor
 

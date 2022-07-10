@@ -45,7 +45,7 @@ class Enc(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(depths[:0]) : sum(depths[:1])],
+            drop_path=dpr[sum(depths[:0]): sum(depths[:1])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -63,7 +63,7 @@ class Enc(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(depths[:1]) : sum(depths[:2])],
+            drop_path=dpr[sum(depths[:1]): sum(depths[:2])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -81,7 +81,7 @@ class Enc(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(depths[:2]) : sum(depths[:3])],
+            drop_path=dpr[sum(depths[:2]): sum(depths[:3])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -99,7 +99,7 @@ class Enc(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(depths[:3]) : sum(depths[:4])],
+            drop_path=dpr[sum(depths[:3]): sum(depths[:4])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -149,7 +149,7 @@ class Dec(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(_depths[:2]) : sum(_depths[:3])],
+            drop_path=dpr[sum(_depths[:2]): sum(_depths[:3])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -172,7 +172,7 @@ class Dec(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(_depths[:3]) : sum(_depths[:4])],
+            drop_path=dpr[sum(_depths[:3]): sum(_depths[:4])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -195,7 +195,7 @@ class Dec(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(_depths[:4]) : sum(_depths[:5])],
+            drop_path=dpr[sum(_depths[:4]): sum(_depths[:5])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -218,7 +218,7 @@ class Dec(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(_depths[:5]) : sum(_depths[:6])],
+            drop_path=dpr[sum(_depths[:5]): sum(_depths[:6])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -270,7 +270,7 @@ class HyperEnc(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(depths[:4]) : sum(depths[:5])],
+            drop_path=dpr[sum(depths[:4]): sum(depths[:5])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -288,7 +288,7 @@ class HyperEnc(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(depths[:5]) : sum(depths[:6])],
+            drop_path=dpr[sum(depths[:5]): sum(depths[:6])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -327,7 +327,7 @@ class HyperDec(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(_depths[:0]) : sum(_depths[:1])],
+            drop_path=dpr[sum(_depths[:0]): sum(_depths[:1])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -350,7 +350,7 @@ class HyperDec(nn.Module):
             qk_scale=qk_scale,
             drop=drop_rate,
             attn_drop=attn_drop_rate,
-            drop_path=dpr[sum(_depths[:1]) : sum(_depths[:2])],
+            drop_path=dpr[sum(_depths[:1]): sum(_depths[:2])],
             norm_layer=norm_layer,
             use_checkpoint=use_checkpoint,
         )
@@ -383,7 +383,7 @@ class SwinVAE(nn.Module):
     """
 
     def __init__(
-        self, in_channels=3, stem_channels=96, main_channels=192, hyper_channels=128
+            self, in_channels=3, stem_channels=96, main_channels=192, hyper_channels=128
     ):
         super().__init__()
         self.enc = Enc(

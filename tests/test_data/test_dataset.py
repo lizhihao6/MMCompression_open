@@ -1,10 +1,7 @@
 import os.path as osp
 from unittest.mock import MagicMock, patch
 
-import pytest
-import torch
-
-from mmcomp.datasets import DATASETS, CustomDataset, ConcatDataset, RepeatDataset
+from mmcomp.datasets import CustomDataset, ConcatDataset, RepeatDataset
 
 
 @patch('mmcomp.datasets.CustomDataset.load_annotations', MagicMock)
@@ -108,6 +105,7 @@ def test_custom_dataset():
     pseudo_results = [{'bpp': 0.2, 'psnr': 25}, {'bpp': 0.1, 'psnr': 30}]
     eval_results = train_dataset.evaluate(pseudo_results)
     assert isinstance(eval_results, dict)
+
 
 @patch('mmcomp.datasets.CustomDataset.load_annotations', MagicMock)
 @patch('mmcomp.datasets.CustomDataset.__getitem__',

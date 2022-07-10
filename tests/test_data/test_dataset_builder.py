@@ -2,12 +2,10 @@
 import math
 import os.path as osp
 
-import pytest
 from torch.utils.data import (DistributedSampler, RandomSampler,
                               SequentialSampler, Dataset)
 
-from mmcomp.datasets import (DATASETS, ConcatDataset,
-                             build_dataloader, build_dataset)
+from mmcomp.datasets import (DATASETS, build_dataloader, build_dataset)
 
 
 @DATASETS.register_module()

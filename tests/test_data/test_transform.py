@@ -4,7 +4,6 @@ import os.path as osp
 import mmcv
 import numpy as np
 import pytest
-from PIL import Image
 from mmcv.utils import build_from_cfg
 
 from mmcomp.datasets.builder import PIPELINES
@@ -254,4 +253,3 @@ def test_normalize():
     std = np.array(img_norm_cfg['std'])
     converted_img = (original_img[..., ::-1] - mean) / std
     assert np.allclose(results['img'], converted_img)
-
