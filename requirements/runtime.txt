@@ -1,14 +1,12 @@
 matplotlib
 numpy
 pytorch-msssim
-rawpy
 tqdm
-scikit-video
 mmcv-full
 pillow
 opencv-python
 imageio
 scipy
 setuptools
-pidng
 timm
+opencv-python

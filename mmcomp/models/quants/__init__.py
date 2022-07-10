@@ -1,16 +1,16 @@
+# Copyright (c) NJU Vision Lab. All rights reserved.
 import torch
 
 from ..builder import QUANTS
 
-__all__ = [
-    'X3Quant', 'UniverseQuant',
-]
+__all__ = ['X3Quant', 'UniverseQuant', ]
 
 
 @QUANTS.register_module()
 class X3Quant(torch.nn.Module):
-    def __init__(self):
-        super(X3Quant, self).__init__()
+    """
+    x**3 quantization. noise = x-round(x), return round(x) + noise ** 3
+    """
 
     def forward(self, x):
         return torch.round(x) + (x - torch.round(x)) ** 3
@@ -18,8 +18,9 @@ class X3Quant(torch.nn.Module):
 
 @QUANTS.register_module()
 class UniverseQuant(torch.nn.Module):
-    def __init__(self):
-        super(UniverseQuant, self).__init__()
+    """
+    Universe Quantization. Random add noise to the input.
+    """
 
     def forward(self, x):
         half = float(0.5)

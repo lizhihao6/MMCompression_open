@@ -1,3 +1,4 @@
+# Copyright (c) NJU Vision Lab. All rights reserved.
 import os.path as osp
 
 import mmcv
@@ -5,10 +6,11 @@ from mmcv.utils import print_log
 from torch.utils.data import Dataset
 
 from mmcomp.utils import get_root_logger
+from .builder import DATASETS
 from .pipelines import Compose
 
 
-# @DATASETS.register_module()
+@DATASETS.register_module()
 class CustomDataset(Dataset):
     """Custom dataset for compression. An example of file structure
     is as followed.
@@ -34,7 +36,6 @@ class CustomDataset(Dataset):
             images in img_dir/ann_dir will be loaded. Default: None
         data_root (str, optional): Data root for img_dir/ann_dir. Default:
             None.
-        test_mode (bool): Place Holder. Default: False
     """
 
     def __init__(self,
@@ -42,8 +43,7 @@ class CustomDataset(Dataset):
                  img_dir,
                  img_suffix='.jpg',
                  split=None,
-                 data_root=None,
-                 test_mode=False):
+                 data_root=None):
         self.pipeline = Compose(pipeline)
         self.img_dir = img_dir
         self.img_suffix = img_suffix
@@ -64,7 +64,8 @@ class CustomDataset(Dataset):
         """Total number of samples of data."""
         return len(self.img_infos)
 
-    def load_annotations(self, img_dir, img_suffix, split):
+    @staticmethod
+    def load_annotations(img_dir, img_suffix, split):
         """Load annotation from directory.
 
         Args:
@@ -80,7 +81,7 @@ class CustomDataset(Dataset):
 
         img_infos = []
         if split is not None:
-            with open(split) as f:
+            with open(split, 'r', encoding='utf-8') as f:
                 for line in f:
                     img_name = line.strip()
                     img_info = dict(filename=img_name + img_suffix)
@@ -116,10 +117,10 @@ class CustomDataset(Dataset):
 
     def format_results(self, results, **kwargs):
         """Place holder to format result to dataset specific output."""
-        return self.evaluate(results)
+        return self.evaluate(results, **kwargs)
 
-    def evaluate(self,
-                 results,
+    @staticmethod
+    def evaluate(results,
                  logger=None,
                  **kwargs):
         """Evaluate the dataset.
@@ -128,6 +129,7 @@ class CustomDataset(Dataset):
             results (list): Testing results of the dataset.
             logger (logging.Logger | None | str): Logger used for printing
                 related information during evaluation. Default: None.
+            kwargs (dict): Other arguments for evaluation.
 
         Returns:
             dict[str, float]: Default metrics.
@@ -142,6 +144,6 @@ class CustomDataset(Dataset):
         log_str = ''
         for k, v in zip(keys, values):
             eval_results[k] = v
-            log_str += '{}: {}, '.format(k, v)
-        print_log(log_str[:-2])
+            log_str += f'{k}: {v}, '
+        print_log(log_str[:-2], logger=logger if logger is not None else get_root_logger())
         return eval_results

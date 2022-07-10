@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-import re
+import platform
 import shutil
 import sys
 import warnings
@@ -14,22 +14,33 @@ def readme():
     return content
 
 
+version_file = 'mmcomp/version.py'
+
+
 def get_version():
-    version_file = 'mmcomp/version.py'
     with open(version_file, 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
 
 
-def parse_requirements(filename='requirements.txt', with_version=True):
+def parse_requirements(fname='requirements.txt', with_version=True):
     """Parse the package dependencies listed in a requirements file but strips
     specific versioning information.
+
     Args:
-        filename (str): path to requirements file
+        fname (str): path to requirements file
         with_version (bool, default=False): if True include version specs
+
     Returns:
         List[str]: list of requirements items
+
+    CommandLine:
+        python -c "import setup; print(setup.parse_requirements())"
     """
+    import re
+    import sys
+    from os.path import exists
+    require_fpath = fname
 
     def parse_line(line):
         """Parse information from a line in a requirements text file."""
@@ -42,8 +53,6 @@ def parse_requirements(filename='requirements.txt', with_version=True):
             info = {'line': line}
             if line.startswith('-e '):
                 info['package'] = line.split('#egg=')[1]
-            elif '@git+' in line:
-                info['package'] = line
             else:
                 # Remove versioning from the package
                 pat = '(' + '|'.join(['>=', '==', '>']) + ')'
@@ -73,8 +82,8 @@ def parse_requirements(filename='requirements.txt', with_version=True):
                         yield info
 
     def gen_packages_items():
-        if osp.exists(filename):
-            for info in parse_require_file(filename):
+        if exists(require_fpath):
+            for info in parse_require_file(require_fpath):
                 parts = [info['package']]
                 if with_version and 'version' in info:
                     parts.extend(info['version'])
@@ -92,6 +101,7 @@ def parse_requirements(filename='requirements.txt', with_version=True):
 
 def add_mim_extension():
     """Add extra files that are required to support MIM into the package.
+
     These files will be added by creating a symlink to the originals if the
     package is installed in `editable` mode (e.g. pip install -e .), or by
     copying from the originals otherwise.
@@ -100,15 +110,21 @@ def add_mim_extension():
     # parse installment mode
     if 'develop' in sys.argv:
         # installed by `pip install -e .`
-        mode = 'symlink'
-    elif 'sdist' in sys.argv or 'bdist_wheel' in sys.argv:
+        if platform.system() == 'Windows':
+            # set `copy` mode here since symlink fails on Windows.
+            mode = 'copy'
+        else:
+            mode = 'symlink'
+    elif 'sdist' in sys.argv or 'bdist_wheel' in sys.argv or \
+            platform.system() == 'Windows':
         # installed by `pip install .`
         # or create source distribution by `python setup.py sdist`
+        # set `copy` mode here since symlink fails with WinError on Windows.
         mode = 'copy'
     else:
         return
 
-    filenames = ['tools', 'configs', 'demo', 'model-index.yml']
+    filenames = ['tools', 'configs', 'model-index.yml']
     repo_path = osp.dirname(__file__)
     mim_path = osp.join(repo_path, 'mmcomp', '.mim')
     os.makedirs(mim_path, exist_ok=True)
@@ -152,35 +168,34 @@ def add_mim_extension():
 if __name__ == '__main__':
     add_mim_extension()
     setup(
-        name='mmcomp',
+        name='mmcompression',
         version=get_version(),
-        description='OpenMMLab Compression Toolbox and Benchmark',
+        description='Open MMLab Semantic Segmentation Toolbox and Benchmark',
         long_description=readme(),
         long_description_content_type='text/markdown',
-        keywords='computer vision, optical flow',
+        author='MMCompression Contributors',
+        author_email='openmmlab@gmail.com',
+        keywords='computer vision, semantic segmentation',
+        url='http://github.com/open-mmlab/mmcompression',
         packages=find_packages(exclude=('configs', 'tools', 'demo')),
         include_package_data=True,
         classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: Apache Software License',
             'Operating System :: OS Independent',
-            'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
+            'Programming Language :: Python :: 3.9',
         ],
-        url='https://github.com/open-mmlab/mmcomp',
-        author='MMComp Contributors',
-        author_email='openmmlab@gmail.com',
         license='Apache License 2.0',
-        setup_requires=parse_requirements('requirements/build.txt'),
-        tests_require=parse_requirements('requirements/tests.txt'),
         install_requires=parse_requirements('requirements/runtime.txt'),
         extras_require={
             'all': parse_requirements('requirements.txt'),
             'tests': parse_requirements('requirements/tests.txt'),
             'build': parse_requirements('requirements/build.txt'),
             'optional': parse_requirements('requirements/optional.txt'),
+            'mim': parse_requirements('requirements/mminstall.txt'),
         },
         ext_modules=[],
         zip_safe=False)

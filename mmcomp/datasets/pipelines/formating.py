@@ -1,3 +1,4 @@
+# Copyright (c) NJU Vision Lab. All rights reserved.
 from collections.abc import Sequence
 
 import mmcv
@@ -21,20 +22,19 @@ def to_tensor(data):
 
     if isinstance(data, torch.Tensor):
         return data
-    elif isinstance(data, np.ndarray):
+    if isinstance(data, np.ndarray):
         return torch.from_numpy(data)
-    elif isinstance(data, Sequence) and not mmcv.is_str(data):
+    if isinstance(data, Sequence) and not mmcv.is_str(data):
         return torch.tensor(data)
-    elif isinstance(data, int):
+    if isinstance(data, int):
         return torch.LongTensor([data])
-    elif isinstance(data, float):
+    if isinstance(data, float):
         return torch.FloatTensor([data])
-    else:
-        raise TypeError(f'type {type(data)} cannot be converted to tensor.')
+    raise TypeError(f'type {type(data)} cannot be converted to tensor.')
 
 
 @PIPELINES.register_module()
-class ToTensor(object):
+class ToTensor:
     """Convert some results to :obj:`torch.Tensor` by given keys.
 
     Args:
@@ -63,7 +63,7 @@ class ToTensor(object):
 
 
 @PIPELINES.register_module()
-class ImageToTensor(object):
+class ImageToTensor:
     """Convert image to :obj:`torch.Tensor` by given keys.
 
     The dimension order of input image is (H, W, C). The pipeline will convert
@@ -101,7 +101,7 @@ class ImageToTensor(object):
 
 
 @PIPELINES.register_module()
-class NPFloatToTensor(object):
+class NPFloatToTensor:
     """Convert image to :obj:`torch.Tensor` by given keys.
 
     The dimension order of input image is (H, W, C). The pipeline will convert
@@ -131,7 +131,7 @@ class NPFloatToTensor(object):
             np_float = results[key]
             assert isinstance(np_float, np.ndarray)
             if len(np_float.shape) < 3:
-                for i in range(3 - len(np_float.shape)):
+                for _ in range(3 - len(np_float.shape)):
                     np_float = np.expand_dims(np_float, -1)
             results[key] = to_tensor(np_float)
         return results
@@ -141,7 +141,7 @@ class NPFloatToTensor(object):
 
 
 @PIPELINES.register_module()
-class Transpose(object):
+class Transpose:
     """Transpose some results by given keys.
 
     Args:
@@ -175,20 +175,19 @@ class Transpose(object):
 
 
 @PIPELINES.register_module()
-class ToDataContainer(object):
+class ToDataContainer:
     """Convert results to :obj:`mmcv.DataContainer` by given fields.
 
     Args:
         fields (Sequence[dict]): Each field is a dict like
             ``dict(key='xxx', **kwargs)``. The ``key`` in result will
             be converted to :obj:`mmcv.DataContainer` with ``**kwargs``.
-            Default: ``(dict(key='img', stack=True),
-            dict(key='gt_semantic_seg'))``.
+            Default: ``(dict(key='img', stack=True))``.
     """
 
     def __init__(self,
                  fields=(dict(key='img',
-                              stack=True), dict(key='gt_semantic_seg'))):
+                              stack=True),)):
         self.fields = fields
 
     def __call__(self, results):
@@ -214,15 +213,13 @@ class ToDataContainer(object):
 
 
 @PIPELINES.register_module()
-class DefaultFormatBundle(object):
+class DefaultFormatBundle:
     """Default formatting bundle.
 
-    It simplifies the pipeline of formatting common fields, including "img"
-    and "gt_semantic_seg". These fields are formatted as follows.
+    It simplifies the pipeline of formatting common fields, including "img".
+    These fields are formatted as follows.
 
     - img: (1)transpose, (2)to tensor, (3)to DataContainer (stack=True)
-    - gt_semantic_seg: (1)unsqueeze dim-0 (2)to tensor,
-                       (3)to DataContainer (stack=True)
     """
 
     def __call__(self, results):
@@ -241,8 +238,6 @@ class DefaultFormatBundle(object):
             img = np.expand_dims(img, -1)
         img = np.ascontiguousarray(img.transpose(2, 0, 1))
         results['img'] = DC(to_tensor(img), stack=True)
-        if 'mask' in results:
-            results['mask'] = DC(to_tensor(results['mask'][None]).bool().float(), stack=True)
         return results
 
     def __repr__(self):
@@ -250,40 +245,11 @@ class DefaultFormatBundle(object):
 
 
 @PIPELINES.register_module()
-class GenerateMask(object):
-    """Generate Mask from gt segmentation.
-
-    It simplifies the pipeline of generate mask from gt segmentation, including "mask"
-    and "gt_semantic_seg". These fields are formatted as follows.
-
-    - mask: new generate
-    - gt_semantic_seg: (1)unsqueeze dim-0 (2)to tensor,
-                       (3)to DataContainer (stack=True)
-    """
-
-    def __init__(self, class_ids):
-        self.class_ids = class_ids
-
-    def __call__(self, results):
-        assert 'gt_semantic_seg' in results.keys()
-        mask = np.zeros_like(results['gt_semantic_seg']).astype(np.float32)
-        for i in self.class_ids:
-            mask[results['gt_semantic_seg'] == i] = 1.
-        del results['gt_semantic_seg'], results['seg_fields']
-        results['mask'] = mask
-        return results
-
-    def __repr__(self):
-        return self.__class__.__name__ + \
-               f'(class_ids={self.class_ids})'
-
-
-@PIPELINES.register_module()
-class Collect(object):
+class Collect:
     """Collect data from the loader relevant to the specific task.
 
     This is usually the last stage of the data loader pipeline. Typically keys
-    is set to some subset of "img", "gt_semantic_seg".
+    is set to some subset of "img".
 
     The "img_meta" item is always populated.  The contents of the "img_meta"
     dictionary depends on "meta_keys". By default this includes:
@@ -320,8 +286,7 @@ class Collect(object):
                  keys,
                  meta_keys=('filename', 'ori_filename', 'ori_shape',
                             'img_shape', 'pad_shape', 'scale_factor', 'flip',
-                            'flip_direction', 'img_norm_cfg', 'white_level',
-                            'black_level', 'cam_wb')):
+                            'flip_direction', 'img_norm_cfg')):
         self.keys = keys
         self.meta_keys = meta_keys
 

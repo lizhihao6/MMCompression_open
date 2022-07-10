@@ -1,5 +1,6 @@
-from .factorized import Factorized_Entropy
+# Copyright (c) NJU Vision Lab. All rights reserved.
+from .factorized import FactorizedEntropy
 
 __all__ = [
-    'Factorized_Entropy'
+    'FactorizedEntropy'
 ]

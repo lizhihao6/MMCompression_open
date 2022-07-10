@@ -10,7 +10,7 @@ def add_prefix(inputs, prefix):
         dict: The dict with keys updated with ``prefix``.
     """
 
-    outputs = dict()
+    outputs = {}
     for name, value in inputs.items():
         outputs[f'{prefix}.{name}'] = value
 

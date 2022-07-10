@@ -1,11 +1,12 @@
-import torch.nn as nn
-import torch.utils.checkpoint as checkpoint
+# Copyright (c) NJU Vision Lab. All rights reserved.
+from torch import nn
+from torch.utils import checkpoint
 
 from .swin import SwinTransformerBlock, PatchEmbed, PatchUnEmbed
 
 
 class BasicLayer(nn.Module):
-    """ A basic Swin Transformer layer for one stage.
+    """A basic Swin Transformer layer for one stage.
     Args:
         dim (int): Number of input channels.
         input_resolution (tuple[int]): Input resolution.
@@ -22,9 +23,22 @@ class BasicLayer(nn.Module):
         use_checkpoint (bool): Whether to use checkpointing to save memory. Default: False.
     """
 
-    def __init__(self, dim, input_resolution, depth, num_heads, window_size,
-                 mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., norm_layer=nn.LayerNorm, use_checkpoint=False):
+    def __init__(
+            self,
+            dim,
+            input_resolution,
+            depth,
+            num_heads,
+            window_size,
+            mlp_ratio=4.0,
+            qkv_bias=True,
+            qk_scale=None,
+            drop=0.0,
+            attn_drop=0.0,
+            drop_path=0.0,
+            norm_layer=nn.LayerNorm,
+            use_checkpoint=False,
+    ):
 
         super().__init__()
         self.dim = dim
@@ -33,18 +47,36 @@ class BasicLayer(nn.Module):
         self.use_checkpoint = use_checkpoint
 
         # build blocks
-        self.blocks = nn.ModuleList([
-            SwinTransformerBlock(dim=dim, input_resolution=input_resolution,
-                                 num_heads=num_heads, window_size=window_size,
-                                 shift_size=0 if (i % 2 == 0) else window_size // 2,
-                                 mlp_ratio=mlp_ratio,
-                                 qkv_bias=qkv_bias, qk_scale=qk_scale,
-                                 drop=drop, attn_drop=attn_drop,
-                                 drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path,
-                                 norm_layer=norm_layer)
-            for i in range(depth)])
+        self.blocks = nn.ModuleList(
+            [
+                SwinTransformerBlock(
+                    dim=dim,
+                    input_resolution=input_resolution,
+                    num_heads=num_heads,
+                    window_size=window_size,
+                    shift_size=0 if (i % 2 == 0) else window_size // 2,
+                    mlp_ratio=mlp_ratio,
+                    qkv_bias=qkv_bias,
+                    qk_scale=qk_scale,
+                    drop=drop,
+                    attn_drop=attn_drop,
+                    drop_path=drop_path[i]
+                    if isinstance(drop_path, list)
+                    else drop_path,
+                    norm_layer=norm_layer,
+                )
+                for i in range(depth)
+            ]
+        )
 
     def forward(self, x, x_size):
+        """
+        Args:
+            x (torch.Tensor): Input tensor.
+            x_size (tuple[int]): Input tensor size.
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         for blk in self.blocks:
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(blk, x)
@@ -53,9 +85,16 @@ class BasicLayer(nn.Module):
         return x
 
     def extra_repr(self) -> str:
+        """
+        Extra information for logging and debugging.
+        """
         return f"dim={self.dim}, input_resolution={self.input_resolution}, depth={self.depth}"
 
     def flops(self):
+        """
+        Returns:
+            int: Number of flops.
+        """
         flops = 0
         for blk in self.blocks:
             flops += blk.flops()
@@ -80,34 +119,64 @@ class RSTB(nn.Module):
         use_checkpoint (bool): Whether to use checkpointing to save memory. Default: False.
     """
 
-    def __init__(self, dim, input_resolution, depth, num_heads, window_size,
-                 mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., norm_layer=nn.LayerNorm, use_checkpoint=False):
-        super(RSTB, self).__init__()
+    def __init__(
+            self,
+            dim,
+            input_resolution,
+            depth,
+            num_heads,
+            window_size,
+            mlp_ratio=4.0,
+            qkv_bias=True,
+            qk_scale=None,
+            drop=0.0,
+            attn_drop=0.0,
+            drop_path=0.0,
+            norm_layer=nn.LayerNorm,
+            use_checkpoint=False,
+    ):
+        super().__init__()
 
         self.dim = dim
         self.input_resolution = input_resolution
 
-        self.residual_group = BasicLayer(dim=dim,
-                                         input_resolution=input_resolution,
-                                         depth=depth,
-                                         num_heads=num_heads,
-                                         window_size=window_size,
-                                         mlp_ratio=mlp_ratio,
-                                         qkv_bias=qkv_bias, qk_scale=qk_scale,
-                                         drop=drop, attn_drop=attn_drop,
-                                         drop_path=drop_path,
-                                         norm_layer=norm_layer,
-                                         use_checkpoint=use_checkpoint
-                                         )
+        self.residual_group = BasicLayer(
+            dim=dim,
+            input_resolution=input_resolution,
+            depth=depth,
+            num_heads=num_heads,
+            window_size=window_size,
+            mlp_ratio=mlp_ratio,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            drop=drop,
+            attn_drop=attn_drop,
+            drop_path=drop_path,
+            norm_layer=norm_layer,
+            use_checkpoint=use_checkpoint,
+        )
 
         self.patch_embed = PatchEmbed()
         self.patch_unembed = PatchUnEmbed()
 
     def forward(self, x, x_size):
-        return self.patch_unembed(self.residual_group(self.patch_embed(x), x_size), x_size) + x
+        """
+        Args:
+            x (torch.Tensor): Input tensor.
+            x_size (tuple[int]): Input tensor size.
+        Returns:
+            torch.Tensor: Output tensor.
+        """
+        return (
+                self.patch_unembed(self.residual_group(self.patch_embed(x), x_size), x_size)
+                + x
+        )
 
     def flops(self):
+        """
+        Returns:
+            int: Number of flops.
+        """
         flops = 0
         flops += self.residual_group.flops()
         flops += self.patch_embed.flops()

@@ -1,10 +1,18 @@
+# Copyright (c) NJU Vision Lab. All rights reserved.
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class Non_local_Block(nn.Module):
+    """
+    Non-local block for image feature extraction.
+    Args:
+        in_channel (int): Number of input channels.
+        out_channel (int): Number of output channels.
+    """
+
     def __init__(self, in_channel, out_channel):
-        super(Non_local_Block, self).__init__()
+        super().__init__()
         self.in_channel = in_channel
         self.out_channel = out_channel
         self.g = nn.Conv2d(self.in_channel, self.out_channel, 1, 1, 0)
@@ -15,8 +23,13 @@ class Non_local_Block(nn.Module):
         nn.init.constant_(self.W.bias, 0)
 
     def forward(self, x):
+        """
+        Args:
+            x (torch.Tensor): Input tensor.
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         # x_size: (b c h w)
-
         batch_size = x.size(0)
         g_x = self.g(x).view(batch_size, self.out_channel, -1)
         g_x = g_x.permute(0, 2, 1)

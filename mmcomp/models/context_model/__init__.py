@@ -1,6 +1,5 @@
+# Copyright (c) NJU Vision Lab. All rights reserved.
 from .mcm import MCM
-from .weighted_gaussian import Weighted_Gaussian, Scale_Weighted_Gaussian
+from .weighted_gaussian import WeightedGaussian
 
-__all__ = [
-    'Weighted_Gaussian', 'Scale_Weighted_Gaussian', 'MCM'
-]
+__all__ = ['WeightedGaussian', 'MCM']

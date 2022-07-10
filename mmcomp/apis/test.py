@@ -57,22 +57,21 @@ def single_gpu_test(model,
     dataset = data_loader.dataset
     prog_bar = mmcv.ProgressBar(len(dataset))
     for i, data in enumerate(data_loader):
-        return_image = True if show or out_dir else False
+        return_image = bool(show or out_dir)
         with torch.no_grad():
             result = model(return_loss=False, return_image=return_image, **data)
-        img_meta = data['img_metas'].data[0][0]
+        img_meta = data['img_metas'][0][0]
         filename = img_meta['ori_filename']
         ori_filenames.append(filename)
 
         # support nvc
         k = 'img' if 'img' in data.keys() else 'frames'
         if show or out_dir:
-            # todo: support multi batch_size during test
             assert data[k].shape[0] == 1
             if out_dir:
                 if not os.path.exists(out_dir):
                     os.mkdir(out_dir)
-                    os.system("chmod -R 777 {}".format(out_dir))
+                    os.system(f"chmod -R 777 {out_dir}")
                 out_file = osp.join(out_dir, filename)
                 suffix = out_file.split('.')[-1]
                 out_file = out_file.replace(suffix, 'png')
@@ -158,7 +157,7 @@ def multi_gpu_test(model,
     rank, world_size = get_dist_info()
     if rank == 0:
         prog_bar = mmcv.ProgressBar(len(dataset))
-    for i, data in enumerate(data_loader):
+    for _, data in enumerate(data_loader):
         with torch.no_grad():
             result = model(return_loss=False, return_image=False, **data)
 
@@ -207,16 +206,14 @@ def collect_results_cpu(result_part, size, tmpdir=None):
     else:
         mmcv.mkdir_or_exist(tmpdir)
     # dump the part result to the dir
-    mmcv.dump(result_part, osp.join(tmpdir, 'part_{}.pkl'.format(rank)))
+    mmcv.dump(result_part, osp.join(tmpdir, f'part_{rank}.pkl'))
     dist.barrier()
     # collect all parts
-    if rank != 0:
-        return None
-    else:
+    if rank == 0:
         # load results of all parts from tmp dir
         part_list = []
         for i in range(world_size):
-            part_file = osp.join(tmpdir, 'part_{}.pkl'.format(i))
+            part_file = osp.join(tmpdir, f'part_{i}.pkl')
             part_list.append(mmcv.load(part_file))
         # sort the results
         ordered_results = []
@@ -227,6 +224,8 @@ def collect_results_cpu(result_part, size, tmpdir=None):
         # remove tmp dir
         shutil.rmtree(tmpdir)
         return ordered_results
+
+    return None
 
 
 def collect_results_gpu(result_part, size):
@@ -261,3 +260,5 @@ def collect_results_gpu(result_part, size):
         # the dataloader may pad some samples
         ordered_results = ordered_results[:size]
         return ordered_results
+
+    return None

@@ -23,8 +23,8 @@ def _get_config_directory():
     return config_dpath
 
 
-def test_config_build_segmentor():
-    """Test that all segmentation models defined in the configs can be
+def test_config_build_compressor():
+    """Test that all compressor models defined in the configs can be
     initialized."""
     config_dpath = _get_config_directory()
     print('Found config_dpath = {!r}'.format(config_dpath))
@@ -95,16 +95,13 @@ def test_config_data_pipeline():
         img = np.random.randint(0, 255, size=(1024, 2048, 3), dtype=np.uint8)
         if to_float32:
             img = img.astype(np.float32)
-        seg = np.random.randint(0, 255, size=(1024, 2048, 1), dtype=np.uint8)
 
         results = dict(
             filename='test_img.png',
             ori_filename='test_img.png',
             img=img,
             img_shape=img.shape,
-            ori_shape=img.shape,
-            gt_semantic_seg=seg)
-        results['seg_fields'] = ['gt_semantic_seg']
+            ori_shape=img.shape)
 
         print('Test training data pipeline: \n{!r}'.format(train_pipeline))
         output_results = train_pipeline(results)
@@ -115,46 +112,8 @@ def test_config_data_pipeline():
             ori_filename='test_img.png',
             img=img,
             img_shape=img.shape,
-            ori_shape=img.shape,
-            gt_semantic_seg=seg)
-        results['seg_fields'] = ['gt_semantic_seg']
+            ori_shape=img.shape)
 
         print('Test testing data pipeline: \n{!r}'.format(test_pipeline))
         output_results = test_pipeline(results)
         assert output_results is not None
-
-
-def _check_decode_head(decode_head_cfg, decode_head):
-    if isinstance(decode_head_cfg, list):
-        assert isinstance(decode_head, nn.ModuleList)
-        assert len(decode_head_cfg) == len(decode_head)
-        num_heads = len(decode_head)
-        for i in range(num_heads):
-            _check_decode_head(decode_head_cfg[i], decode_head[i])
-        return
-    # check consistency between head_config and roi_head
-    assert decode_head_cfg['type'] == decode_head.__class__.__name__
-
-    assert decode_head_cfg['type'] == decode_head.__class__.__name__
-
-    in_channels = decode_head_cfg.in_channels
-    input_transform = decode_head.input_transform
-    assert input_transform in ['resize_concat', 'multiple_select', None]
-    if input_transform is not None:
-        assert isinstance(in_channels, (list, tuple))
-        assert isinstance(decode_head.in_index, (list, tuple))
-        assert len(in_channels) == len(decode_head.in_index)
-    elif input_transform == 'resize_concat':
-        assert sum(in_channels) == decode_head.in_channels
-    else:
-        assert isinstance(in_channels, int)
-        assert in_channels == decode_head.in_channels
-        assert isinstance(decode_head.in_index, int)
-
-    if decode_head_cfg['type'] == 'PointHead':
-        assert decode_head_cfg.channels + decode_head_cfg.num_classes == \
-               decode_head.fc_seg.in_channels
-        assert decode_head.fc_seg.out_channels == decode_head_cfg.num_classes
-    else:
-        assert decode_head_cfg.channels == decode_head.conv_seg.in_channels
-        assert decode_head.conv_seg.out_channels == decode_head_cfg.num_classes

@@ -1,3 +1,4 @@
+# Copyright (c) NJU Vision Lab. All rights reserved.
 import warnings
 
 from mmcv.utils import Registry, build_from_cfg
@@ -5,10 +6,7 @@ from torch import nn
 
 CONTEXT = Registry('context_model')
 ENTROPY = Registry('entropy_model')
-HYPERENCODER = Registry('hyper_encoder')
-HYPERDECODER = Registry('hyper_decoder')
-MAINENCODER = Registry('main_encoder')
-MAINDECODER = Registry('main_decoder')
+VAE = Registry('vae')
 LOSSES = Registry('loss')
 QUANTS = Registry('quant')
 COMPRESSOR = Registry('compressor')
@@ -47,24 +45,9 @@ def build_entropy_model(cfg):
     return build(cfg, ENTROPY)
 
 
-def build_hyper_encoder(cfg):
-    """Build hyper encoder."""
-    return build(cfg, HYPERENCODER)
-
-
-def build_hyper_decoder(cfg):
-    """Build hyper decoder."""
-    return build(cfg, HYPERDECODER)
-
-
-def build_main_encoder(cfg):
-    """Build main encoder."""
-    return build(cfg, MAINENCODER)
-
-
-def build_main_decoder(cfg):
-    """Build main decoder."""
-    return build(cfg, MAINDECODER)
+def build_vae(cfg):
+    """Build vae model."""
+    return build(cfg, VAE)
 
 
 def build_loss(cfg):

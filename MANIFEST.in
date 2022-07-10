@@ -1,0 +1,5 @@
+include requirements/*.txt
+include mmcomp/.mim/model-index.yml
+recursive-include mmcomp/.mim/configs *.py *.yml
+recursive-include mmcomp/.mim/tools *.py *.sh
+recursive-include mmcomp/.mim/demo *.py
