@@ -1,3 +1,4 @@
+# Copyright (c) NJU Vision Lab. All rights reserved.
 import os.path as osp
 
 import mmcv
@@ -7,7 +8,7 @@ from ..builder import PIPELINES
 
 
 @PIPELINES.register_module()
-class LoadImageFromFile(object):
+class LoadImageFromFile:
     """Load an image from file.
 
     Required keys are "img_prefix" and "img_info" (a dict that must contain the

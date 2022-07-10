@@ -1,13 +1,14 @@
+# Copyright (c) NJU Vision Lab. All rights reserved.
 import mmcv
 import numpy as np
-from mmcv.utils import deprecated_api_warning, is_tuple_of
+from mmcv.utils import deprecated_api_warning
 from numpy import random
 
 from ..builder import PIPELINES
 
 
 @PIPELINES.register_module()
-class Resize(object):
+class Resize:
     """Resize images & comp.
 
     This transform resizes the input image to some scale. If the input dict
@@ -196,20 +197,8 @@ class Resize(object):
         results['scale_factor'] = scale_factor
         results['keep_ratio'] = self.keep_ratio
 
-    def _resize_seg(self, results):
-        """Resize semantic segmentation map with ``results['scale']``."""
-        for key in results.get('seg_fields', []):
-            if self.keep_ratio:
-                gt_seg = mmcv.imrescale(
-                    results[key], results['scale'], interpolation='nearest')
-            else:
-                gt_seg = mmcv.imresize(
-                    results[key], results['scale'], interpolation='nearest')
-            results[key] = gt_seg
-
     def __call__(self, results):
-        """Call function to resize images, bounding boxes, masks, semantic
-        segmentation map.
+        """Call function to resize images.
 
         Args:
             results (dict): Result dict from loading pipeline.
@@ -222,7 +211,6 @@ class Resize(object):
         if 'scale' not in results:
             self._random_scale(results)
         self._resize_img(results)
-        self._resize_seg(results)
         return results
 
     def __repr__(self):
@@ -235,66 +223,111 @@ class Resize(object):
 
 
 @PIPELINES.register_module()
-class RandomFlip(object):
-    """Flip the image & comp.
-
+class RandomFlip:
+    """Flip the image.
     If the input dict contains the key "flip", then the flag will be used,
     otherwise it will be randomly decided by a ratio specified in the init
     method.
-
+    When random flip is enabled, ``flip_ratio``/``direction`` can either be a
+    float/string or tuple of float/string. There are 3 flip modes:
+    - ``flip_ratio`` is float, ``direction`` is string: the image will be
+        ``direction``ly flipped with probability of ``flip_ratio`` .
+        E.g., ``flip_ratio=0.5``, ``direction='horizontal'``,
+        then image will be horizontally flipped with probability of 0.5.
+    - ``flip_ratio`` is float, ``direction`` is list of string: the image will
+        be ``direction[i]``ly flipped with probability of
+        ``flip_ratio/len(direction)``.
+        E.g., ``flip_ratio=0.5``, ``direction=['horizontal', 'vertical']``,
+        then image will be horizontally flipped with probability of 0.25,
+        vertically with probability of 0.25.
+    - ``flip_ratio`` is list of float, ``direction`` is list of string:
+        given ``len(flip_ratio) == len(direction)``, the image will
+        be ``direction[i]``ly flipped with probability of ``flip_ratio[i]``.
+        E.g., ``flip_ratio=[0.3, 0.5]``, ``direction=['horizontal',
+        'vertical']``, then image will be horizontally flipped with probability
+        of 0.3, vertically with probability of 0.5.
     Args:
-        prob (float, optional): The flipping probability. Default: None.
-        direction(str, optional): The flipping direction. Options are
-            'horizontal' and 'vertical'. Default: 'horizontal'.
+        flip_ratio (float | list[float], optional): The flipping probability.
+            Default: None.
+        direction(str | list[str], optional): The flipping direction. Options
+            are 'horizontal', 'vertical', 'diagonal'. Default: 'horizontal'.
+            If input is a list, the length must equal ``flip_ratio``. Each
+            element in ``flip_ratio`` indicates the flip probability of
+            corresponding direction.
     """
 
-    @deprecated_api_warning({'flip_ratio': 'prob'}, cls_name='RandomFlip')
-    def __init__(self, prob=None, direction='horizontal'):
-        self.prob = prob
+    def __init__(self, flip_ratio=None, direction='horizontal'):
+        if isinstance(flip_ratio, list):
+            assert mmcv.is_list_of(flip_ratio, float)
+            assert 0 <= sum(flip_ratio) <= 1
+        elif isinstance(flip_ratio, float):
+            assert 0 <= flip_ratio <= 1
+        elif flip_ratio is None:
+            pass
+        else:
+            raise ValueError('flip_ratios must be None, float, '
+                             'or list of float')
+        self.flip_ratio = flip_ratio
+
+        valid_directions = ['horizontal', 'vertical', 'diagonal']
+        if isinstance(direction, str):
+            assert direction in valid_directions
+        elif isinstance(direction, list):
+            assert mmcv.is_list_of(direction, str)
+            assert set(direction).issubset(set(valid_directions))
+        else:
+            raise ValueError('direction must be either str or list of str')
         self.direction = direction
-        if prob is not None:
-            assert prob >= 0 and prob <= 1
-        assert direction in ['horizontal', 'vertical']
+
+        if isinstance(flip_ratio, list):
+            assert len(self.flip_ratio) == len(self.direction)
+
 
     def __call__(self, results):
-        """Call function to flip bounding boxes, masks, semantic segmentation
-        maps.
-
+        """Call function to flip img.
         Args:
             results (dict): Result dict from loading pipeline.
-
         Returns:
-            dict: Flipped results, 'flip', 'flip_direction' keys are added into
-                result dict.
+            dict: Flipped results, 'flip', 'flip_direction' keys are added \
+                into result dict.
         """
 
         if 'flip' not in results:
-            flip = True if np.random.rand() < self.prob else False
-            results['flip'] = flip
+            if isinstance(self.direction, list):
+                # None means non-flip
+                direction_list = self.direction + [None]
+            else:
+                # None means non-flip
+                direction_list = [self.direction, None]
+
+            if isinstance(self.flip_ratio, list):
+                non_flip_ratio = 1 - sum(self.flip_ratio)
+                flip_ratio_list = self.flip_ratio + [non_flip_ratio]
+            else:
+                non_flip_ratio = 1 - self.flip_ratio
+                # exclude non-flip
+                single_ratio = self.flip_ratio / (len(direction_list) - 1)
+                flip_ratio_list = [single_ratio] * (len(direction_list) -
+                                                    1) + [non_flip_ratio]
+
+            cur_dir = np.random.choice(direction_list, p=flip_ratio_list)
+
+            results['flip'] = cur_dir is not None
         if 'flip_direction' not in results:
-            results['flip_direction'] = self.direction
+            results['flip_direction'] = cur_dir
         if results['flip']:
             # flip image
-            results['img'] = mmcv.imflip(
-                results['img'], direction=results['flip_direction'])
-
-            # flip segs
-            if 'seg_fields' in results.keys():
-                for key in results.get('seg_fields', []):
-                    # use copy() to make numpy stride positive
-                    results[key] = mmcv.imflip(
-                        results[key], direction=results['flip_direction']).copy()
+            for key in results.get('img_fields', ['img']):
+                results[key] = mmcv.imflip(
+                    results[key], direction=results['flip_direction'])
         return results
 
     def __repr__(self):
-        repr_str = self.__class__.__name__
-        repr_str += f'(prob={self.prob}, ' \
-                    f'direction={self.direction})'
-        return repr_str
+        return self.__class__.__name__ + f'(flip_ratio={self.flip_ratio})'
 
 
 @PIPELINES.register_module()
-class Pad(object):
+class Pad:
     """Pad the image & mask.
 
     There are two padding modes: (1) pad to a fixed size and (2) pad to the
@@ -305,19 +338,15 @@ class Pad(object):
         size (tuple, optional): Fixed padding size.
         size_divisor (int, optional): The divisor of padded size.
         pad_val (float, optional): Padding value. Default: 0.
-        seg_pad_val (float, optional): Padding value of segmentation map.
-            Default: 255.
     """
 
     def __init__(self,
                  size=None,
                  size_divisor=None,
-                 pad_val=0,
-                 seg_pad_val=255):
+                 pad_val=0):
         self.size = size
         self.size_divisor = size_divisor
         self.pad_val = pad_val
-        self.seg_pad_val = seg_pad_val
         # only one of size and size_divisor should be valid
         assert size is not None or size_divisor is not None
         assert size is None or size_divisor is None
@@ -335,16 +364,8 @@ class Pad(object):
         results['pad_fixed_size'] = self.size
         results['pad_size_divisor'] = self.size_divisor
 
-    def _pad_seg(self, results):
-        """Pad masks according to ``results['pad_shape']``."""
-        for key in results.get('seg_fields', []):
-            results[key] = mmcv.impad(
-                results[key],
-                shape=results['pad_shape'][:2],
-                pad_val=self.seg_pad_val)
-
     def __call__(self, results):
-        """Call function to pad images, masks, semantic segmentation maps.
+        """Call function to pad images.
 
         Args:
             results (dict): Result dict from loading pipeline.
@@ -354,8 +375,7 @@ class Pad(object):
         """
 
         self._pad_img(results)
-        if 'seg_fields' in results.keys():
-            self._pad_seg(results)
+
         return results
 
     def __repr__(self):
@@ -366,7 +386,7 @@ class Pad(object):
 
 
 @PIPELINES.register_module()
-class Normalize(object):
+class Normalize:
     # Will auto convert uint8 to float32
     """Normalize the image.
 
@@ -408,65 +428,16 @@ class Normalize(object):
 
 
 @PIPELINES.register_module()
-class CLAHE(object):
-    """Use CLAHE method to process the image.
-
-    See `ZUIDERVELD,K. Contrast Limited Adaptive Histogram Equalization[J].
-    Graphics Gems, 1994:474-485.` for more information.
-
-    Args:
-        clip_limit (float): Threshold for contrast limiting. Default: 40.0.
-        tile_grid_size (tuple[int]): Size of grid for histogram equalization.
-            Input image will be divided into equally sized rectangular tiles.
-            It defines the number of tiles in row and column. Default: (8, 8).
-    """
-
-    def __init__(self, clip_limit=40.0, tile_grid_size=(8, 8)):
-        assert isinstance(clip_limit, (float, int))
-        self.clip_limit = clip_limit
-        assert is_tuple_of(tile_grid_size, int)
-        assert len(tile_grid_size) == 2
-        self.tile_grid_size = tile_grid_size
-
-    def __call__(self, results):
-        """Call function to Use CLAHE method process images.
-
-        Args:
-            results (dict): Result dict from loading pipeline.
-
-        Returns:
-            dict: Processed results.
-        """
-
-        for i in range(results['img'].shape[2]):
-            results['img'][:, :, i] = mmcv.clahe(
-                np.array(results['img'][:, :, i], dtype=np.uint8),
-                self.clip_limit, self.tile_grid_size)
-
-        return results
-
-    def __repr__(self):
-        repr_str = self.__class__.__name__
-        repr_str += f'(clip_limit={self.clip_limit}, ' \
-                    f'tile_grid_size={self.tile_grid_size})'
-        return repr_str
-
-
-@PIPELINES.register_module()
-class RandomCrop(object):
+class RandomCrop:
     """Random crop the image & comp.
 
     Args:
         crop_size (tuple): Expected size after cropping, (h, w).
-        cat_max_ratio (float): The maximum ratio1 that single category could
-            occupy.
     """
 
-    def __init__(self, crop_size, cat_max_ratio=1., ignore_index=255):
+    def __init__(self, crop_size):
         assert crop_size[0] > 0 and crop_size[1] > 0
         self.crop_size = crop_size
-        self.cat_max_ratio = cat_max_ratio
-        self.ignore_index = ignore_index
 
     def get_crop_bbox(self, img):
         """Randomly get a crop bounding box."""
@@ -498,16 +469,6 @@ class RandomCrop(object):
 
         img = results['img']
         crop_bbox = self.get_crop_bbox(img)
-        if self.cat_max_ratio < 1. and 'gt_semantic_seg' in results.keys():
-            # Repeat 10 times
-            for _ in range(10):
-                seg_temp = self.crop(results['gt_semantic_seg'], crop_bbox)
-                labels, cnt = np.unique(seg_temp, return_counts=True)
-                cnt = cnt[labels != self.ignore_index]
-                if len(cnt) > 1 and np.max(cnt) / np.sum(
-                        cnt) < self.cat_max_ratio:
-                    break
-                crop_bbox = self.get_crop_bbox(img)
 
         # crop the image
         img = self.crop(img, crop_bbox)
@@ -515,23 +476,16 @@ class RandomCrop(object):
         results['img'] = img
         results['img_shape'] = img_shape
 
-        # crop semantic comp
-        if 'seg_fields' in results.keys():
-            for key in results.get('seg_fields', []):
-                results[key] = self.crop(results[key], crop_bbox)
-
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f'(crop_size={self.crop_size}, ' \
-                    f'cat_max_ratio={self.cat_max_ratio}, ' \
-                    f'ignore_index={self.ignore_index})'
+        repr_str += f'(crop_size={self.crop_size})'
         return repr_str
 
 
 @PIPELINES.register_module()
-class RandomRotate(object):
+class RandomRotate:
     """Rotate the image & comp.
 
     Args:
@@ -540,8 +494,6 @@ class RandomRotate(object):
             degree is a number instead of tuple like (min, max),
             the range of degree will be (``-degree``, ``+degree``)
         pad_val (float, optional): Padding value of image. Default: 0.
-        seg_pad_val (float, optional): Padding value of segmentation map.
-            Default: 255.
         center (tuple[float], optional): Center point (w, h) of the rotation in
             the source image. If not specified, the center of the image will be
             used. Default: None.
@@ -553,7 +505,6 @@ class RandomRotate(object):
                  prob,
                  degree,
                  pad_val=0,
-                 seg_pad_val=255,
                  center=None,
                  auto_bound=False):
         self.prob = prob
@@ -566,7 +517,6 @@ class RandomRotate(object):
         assert len(self.degree) == 2, f'degree {self.degree} should be a ' \
                                       f'tuple of (min, max)'
         self.pal_val = pad_val
-        self.seg_pad_val = seg_pad_val
         self.center = center
         self.auto_bound = auto_bound
 
@@ -590,16 +540,6 @@ class RandomRotate(object):
                 border_value=self.pal_val,
                 center=self.center,
                 auto_bound=self.auto_bound)
-
-            # rotate segs
-            for key in results.get('seg_fields', []):
-                results[key] = mmcv.imrotate(
-                    results[key],
-                    angle=degree,
-                    border_value=self.seg_pad_val,
-                    center=self.center,
-                    auto_bound=self.auto_bound,
-                    interpolation='nearest')
         return results
 
     def __repr__(self):
@@ -607,290 +547,6 @@ class RandomRotate(object):
         repr_str += f'(prob={self.prob}, ' \
                     f'degree={self.degree}, ' \
                     f'pad_val={self.pal_val}, ' \
-                    f'seg_pad_val={self.seg_pad_val}, ' \
                     f'center={self.center}, ' \
                     f'auto_bound={self.auto_bound})'
         return repr_str
-
-
-@PIPELINES.register_module()
-class RGB2Gray(object):
-    """Convert RGB image to grayscale image.
-
-    This transform calculate the weighted mean of input image channels with
-    ``weights`` and then expand the channels to ``out_channels``. When
-    ``out_channels`` is None, the number of output channels is the same as
-    input channels.
-
-    Args:
-        out_channels (int): Expected number of output channels after
-            transforming. Default: None.
-        weights (tuple[float]): The weights to calculate the weighted mean.
-            Default: (0.299, 0.587, 0.114).
-    """
-
-    def __init__(self, out_channels=None, weights=(0.299, 0.587, 0.114)):
-        assert out_channels is None or out_channels > 0
-        self.out_channels = out_channels
-        assert isinstance(weights, tuple)
-        for item in weights:
-            assert isinstance(item, (float, int))
-        self.weights = weights
-
-    def __call__(self, results):
-        """Call function to convert RGB image to grayscale image.
-
-        Args:
-            results (dict): Result dict from loading pipeline.
-
-        Returns:
-            dict: Result dict with grayscale image.
-        """
-        img = results['img']
-        assert len(img.shape) == 3
-        assert img.shape[2] == len(self.weights)
-        weights = np.array(self.weights).reshape((1, 1, -1))
-        img = (img * weights).sum(2, keepdims=True)
-        if self.out_channels is None:
-            img = img.repeat(weights.shape[2], axis=2)
-        else:
-            img = img.repeat(self.out_channels, axis=2)
-
-        results['img'] = img
-        results['img_shape'] = img.shape
-
-        return results
-
-    def __repr__(self):
-        repr_str = self.__class__.__name__
-        repr_str += f'(out_channels={self.out_channels}, ' \
-                    f'weights={self.weights})'
-        return repr_str
-
-
-@PIPELINES.register_module()
-class AdjustGamma(object):
-    """Using gamma correction to process the image.
-
-    Args:
-        gamma (float or int): Gamma value used in gamma correction.
-            Default: 1.0.
-    """
-
-    def __init__(self, gamma=1.0):
-        assert isinstance(gamma, float) or isinstance(gamma, int)
-        assert gamma > 0
-        self.gamma = gamma
-        inv_gamma = 1.0 / gamma
-        self.table = np.array([(i / 255.0) ** inv_gamma * 255
-                               for i in np.arange(256)]).astype('uint8')
-
-    def __call__(self, results):
-        """Call function to process the image with gamma correction.
-
-        Args:
-            results (dict): Result dict from loading pipeline.
-
-        Returns:
-            dict: Processed results.
-        """
-
-        results['img'] = mmcv.lut_transform(
-            np.array(results['img'], dtype=np.uint8), self.table)
-
-        return results
-
-    def __repr__(self):
-        return self.__class__.__name__ + f'(gamma={self.gamma})'
-
-
-@PIPELINES.register_module()
-class SegRescale(object):
-    """Rescale semantic segmentation maps.
-
-    Args:
-        scale_factor (float): The scale factor of the final output.
-    """
-
-    def __init__(self, scale_factor=1):
-        self.scale_factor = scale_factor
-
-    def __call__(self, results):
-        """Call function to scale the semantic segmentation map.
-
-        Args:
-            results (dict): Result dict from loading pipeline.
-
-        Returns:
-            dict: Result dict with semantic segmentation map scaled.
-        """
-        for key in results.get('seg_fields', []):
-            if self.scale_factor != 1:
-                results[key] = mmcv.imrescale(
-                    results[key], self.scale_factor, interpolation='nearest')
-        return results
-
-    def __repr__(self):
-        return self.__class__.__name__ + f'(scale_factor={self.scale_factor})'
-
-
-@PIPELINES.register_module()
-class GTSegRescale(object):
-    """Rescale semantic segmentation maps.
-
-    Args:
-        scale_factor (float): The scale factor of the final output.
-    """
-
-    def __init__(self, scale_factor=1):
-        self.scale_factor = scale_factor
-
-    def __call__(self, results):
-        """Call function to scale the semantic segmentation map.
-
-        Args:
-            results (dict): Result dict from loading pipeline.
-
-        Returns:
-            dict: Result dict with semantic segmentation map scaled.
-        """
-        if self.scale_factor != 1:
-            results['gt_semantic_seg'] = mmcv.imrescale(
-                results['gt_semantic_seg'], self.scale_factor, interpolation='nearest')
-        return results
-
-    def __repr__(self):
-        return self.__class__.__name__ + f'(scale_factor={self.scale_factor})'
-
-
-@PIPELINES.register_module()
-class PhotoMetricDistortion(object):
-    """Apply photometric distortion to image sequentially, every transformation
-    is applied with a probability of 0.5. The position of random contrast is in
-    second or second to last.
-
-    1. random brightness
-    2. random contrast (mode 0)
-    3. convert color from BGR to HSV
-    4. random saturation
-    5. random hue
-    6. convert color from HSV to BGR
-    7. random contrast (mode 1)
-    8. randomly swap channels
-
-    Args:
-        brightness_delta (int): delta of brightness.
-        contrast_range (tuple): range of contrast.
-        saturation_range (tuple): range of saturation.
-        hue_delta (int): delta of hue.
-    """
-
-    def __init__(self,
-                 brightness_delta=32,
-                 contrast_range=(0.5, 1.5),
-                 saturation_range=(0.5, 1.5),
-                 hue_delta=18):
-        self.brightness_delta = brightness_delta
-        self.contrast_lower, self.contrast_upper = contrast_range
-        self.saturation_lower, self.saturation_upper = saturation_range
-        self.hue_delta = hue_delta
-
-    def convert(self, img, alpha=1, beta=0):
-        """Multiple with alpha and add beat with clip."""
-        img = img.astype(np.float32) * alpha + beta
-        img = np.clip(img, 0, 255)
-        return img.astype(np.uint8)
-
-    def brightness(self, img):
-        """Brightness distortion."""
-        if random.randint(2):
-            return self.convert(
-                img,
-                beta=random.uniform(-self.brightness_delta,
-                                    self.brightness_delta))
-        return img
-
-    def contrast(self, img):
-        """Contrast distortion."""
-        if random.randint(2):
-            return self.convert(
-                img,
-                alpha=random.uniform(self.contrast_lower, self.contrast_upper))
-        return img
-
-    def saturation(self, img):
-        """Saturation distortion."""
-        if random.randint(2):
-            img = mmcv.bgr2hsv(img)
-            img[:, :, 1] = self.convert(
-                img[:, :, 1],
-                alpha=random.uniform(self.saturation_lower,
-                                     self.saturation_upper))
-            img = mmcv.hsv2bgr(img)
-        return img
-
-    def hue(self, img):
-        """Hue distortion."""
-        if random.randint(2):
-            img = mmcv.bgr2hsv(img)
-            img[:, :,
-            0] = (img[:, :, 0].astype(int) +
-                  random.randint(-self.hue_delta, self.hue_delta)) % 180
-            img = mmcv.hsv2bgr(img)
-        return img
-
-    def __call__(self, results):
-        """Call function to perform photometric distortion on images.
-
-        Args:
-            results (dict): Result dict from loading pipeline.
-
-        Returns:
-            dict: Result dict with images distorted.
-        """
-
-        img = results['img']
-        # random brightness
-        img = self.brightness(img)
-
-        # mode == 0 --> do random contrast first
-        # mode == 1 --> do random contrast last
-        mode = random.randint(2)
-        if mode == 1:
-            img = self.contrast(img)
-
-        # random saturation
-        img = self.saturation(img)
-
-        # random hue
-        img = self.hue(img)
-
-        # random contrast
-        if mode == 0:
-            img = self.contrast(img)
-
-        results['img'] = img
-        return results
-
-    def __repr__(self):
-        repr_str = self.__class__.__name__
-        repr_str += f'(brightness_delta={self.brightness_delta}, ' \
-                    f'contrast_range=({self.contrast_lower}, ' \
-                    f'{self.contrast_upper}), ' \
-                    f'saturation_range=({self.saturation_lower}, ' \
-                    f'{self.saturation_upper}), ' \
-                    f'hue_delta={self.hue_delta})'
-        return repr_str
-
-
-@PIPELINES.register_module()
-class DivMax(object):
-    def __init__(self):
-        pass
-
-    def __call__(self, results):
-        results['img'] /= results['img'].max()
-        return results
-
-    def __repr__(self):
-        return self.__class__.__name__ + f'()'
