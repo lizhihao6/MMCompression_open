@@ -2,7 +2,7 @@
 
 In this section we demonstrate how to prepare an environment with PyTorch.
 
-MMSegmentation works on Linux, Windows and macOS. It requires Python 3.6+, CUDA 9.2+ and PyTorch 1.3+.
+MMCompression works on Linux, Windows and macOS. It requires Python 3.7+, CUDA 9.2+ and PyTorch 1.7+.
 
 ```{note}
 If you are experienced with PyTorch and have already installed it, just skip this part and jump to the [next section](#installation). Otherwise, you can follow these steps for the preparation.
@@ -33,7 +33,7 @@ conda install pytorch torchvision cpuonly -c pytorch
 
 # Installation
 
-We recommend that users follow our best practices to install MMSegmentation. However, the whole process is highly customizable. See [Customize Installation](#customize-installation) section for more information.
+We recommend that users follow our best practices to install MMCompression. However, the whole process is highly customizable. See [Customize Installation](#customize-installation) section for more information.
 
 ## Best Practices
 
@@ -44,76 +44,70 @@ pip install -U openmim
 mim install mmcv-full
 ```
 
-**Step 1.** Install MMSegmentation.
+**Step 1.** Install MMCompression.
 
-Case a: If you develop and run mmseg directly, install it from source:
+Case a: If you develop and run mmcomp directly, install it from source:
 
 ```shell
-git clone https://github.com/open-mmlab/mmsegmentation.git
-cd mmsegmentation
+git clone https://github.com/open-mmlab/mmcopmression.git
+cd mmcompression
 pip install -v -e .
 # "-v" means verbose, or more output
 # "-e" means installing a project in editable mode,
 # thus any local modifications made to the code will take effect without reinstallation.
 ```
 
-Case b: If you use mmsegmentation as a dependency or third-party package, install it with pip:
+Case b: If you use mmcompression as a dependency or third-party package, install it with pip:
 
 ```shell
-pip install mmsegmentation
+pip install mmcompression
 ```
 
 ## Verify the installation
 
-To verify whether MMSegmentation is installed correctly, we provide some sample codes to run an inference demo.
+To verify whether MMCompression is installed correctly, we provide some sample codes to run an inference demo.
 
 **Step 1.** We need to download config and checkpoint files.
 
 ```shell
-mim download mmsegmentation --config pspnet_r50-d8_512x1024_40k_cityscapes --dest .
+mim download mmcompression --config nlaic_flicker2w_100k_qp_3.py --dest .
 ```
 
-The downloading will take several seconds or more, depending on your network environment. When it is done, you will find two files `pspnet_r50-d8_512x1024_40k_cityscapes.py` and `pspnet_r50-d8_512x1024_40k_cityscapes_20200605_003338-2966598c.pth` in your current folder.
+The downloading will take several seconds or more, depending on your network environment. When it is done, you will find two files `nlaic_flicker2w_100k_qp_3.py.py` and `*.pth` in your current folder.
 
 **Step 2.** Verify the inference demo.
 
 Option (a). If you install mmsegmentation from source, just run the following command.
 
 ```shell
-python demo/image_demo.py demo/demo.png configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py pspnet_r50-d8_512x1024_40k_cityscapes_20200605_003338-2966598c.pth --device cuda:0 --out-file result.jpg
+python demo/image_demo.py demo/demo.png configs/nlaic/nlaic_flicker2w_100k_qp_3.py *.pth --device cuda:0 --out-file result.png
 ```
 
-You will see a new image `result.jpg` on your current folder, where segmentation masks are covered on all objects.
+You will see a new image `result.png` on your current folder having compression noise.
 
-Option (b). If you install mmsegmentation with pip, open you python interpreter and copy&paste the following codes.
+Option (b). If you install mmcompression with pip, open you python interpreter and copy&paste the following codes.
 
 ```python
-from mmseg.apis import inference_segmentor, init_segmentor
+from mmcomp.apis import inference_compressor, init_compressor
 import mmcv
 
-config_file = 'pspnet_r50-d8_512x1024_40k_cityscapes.py'
-checkpoint_file = 'pspnet_r50-d8_512x1024_40k_cityscapes_20200605_003338-2966598c.pth'
+config_file = 'nlaic_flicker2w_100k_qp_3.py'
+checkpoint_file = '*.pth'
 
 # build the model from a config file and a checkpoint file
-model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
+model = init_compressor(config_file, checkpoint_file, device='cuda:0')
 
 # test a single image and show the results
-img = 'test.jpg'  # or img = mmcv.imread(img), which will only load it once
-result = inference_segmentor(model, img)
+img = 'test.png'  # or img = mmcv.imread(img), which will only load it once
+result = init_compressor(model, img)
 # visualize the results in a new window
 model.show_result(img, result, show=True)
 # or save the visualization results to image files
 # you can change the opacity of the painted segmentation map in (0, 1].
-model.show_result(img, result, out_file='result.jpg', opacity=0.5)
-
-# test a video and show the results
-video = mmcv.VideoReader('video.mp4')
-for frame in video:
-   result = inference_segmentor(model, frame)
-   model.show_result(frame, result, wait_time=1)
+model.show_result(img, result, out_file='result.png', opacity=0.5)
 ```
 
-You can modify the code above to test a single image or a video, both of these options can verify that the installation was successful.
+You can modify the code above to test a single image, both of these options can verify that the installation was successful.
 
 ## Customize Installation
 
@@ -158,19 +152,19 @@ thus we only need to install MMCV and MMSegmentation with the following commands
 !mim install mmcv-full
 ```
 
-**Step 2.** Install MMSegmentation from the source.
+**Step 2.** Install MMCompression from the source.
 
 ```shell
-!git clone https://github.com/open-mmlab/mmsegmentation.git
-%cd mmsegmentation
+!git clone https://github.com/open-mmlab/mmcompression.git
+%cd mmcompression
 !pip install -e .
 ```
 
 **Step 3.** Verification.
 
 ```python
-import mmseg
-print(mmseg.__version__)
+import mmcomp
+print(mmcomp.__version__)
 # Example output: 0.24.1
 ```
 
@@ -178,9 +172,9 @@ print(mmseg.__version__)
 Within Jupyter, the exclamation mark `!` is used to call external executables and `%cd` is a [magic command](https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-cd) to change the current working directory of Python.
 ```
 
-### Using MMSegmentation with Docker
+### Using MMCompression with Docker
 
-We provide a [Dockerfile](https://github.com/open-mmlab/mmsegmentation/blob/master/docker/Dockerfile) to build an image. Ensure that your [docker version](https://docs.docker.com/engine/install/) >=19.03.
+We provide a [Dockerfile](https://github.com/open-mmlab/mmcompression/blob/master/docker/Dockerfile) to build an image. Ensure that your [docker version](https://docs.docker.com/engine/install/) >=19.03.
 
 ```shell
 # build an image with PyTorch 1.11, CUDA 11.3
@@ -191,10 +185,10 @@ docker build -t mmsegmentation docker/
 Run it with
 
 ```shell
-docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/mmsegmentation/data mmsegmentation
+docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/mmcompression/data mmcopmression
 ```
 
 ## Trouble shooting
 
 If you have some issues during the installation, please first view the [FAQ](faq.md) page.
-You may [open an issue](https://github.com/open-mmlab/mmsegmentation/issues/new/choose) on GitHub if no solution is found.
+You may [open an issue](https://github.com/open-mmlab/mmcompression/issues/new/choose) on GitHub if no solution is found.

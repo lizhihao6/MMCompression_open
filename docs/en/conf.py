@@ -21,10 +21,10 @@ sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'MMSegmentation'
+project = 'MMCompression'
 copyright = '2020-2021, OpenMMLab'
-author = 'MMSegmentation Authors'
-version_file = '../../mmseg/version.py'
+author = 'MMCompression Authors'
+version_file = '../../mmcomp/version.py'
 
 
 def get_version():
@@ -47,7 +47,7 @@ extensions = [
 ]
 
 autodoc_mock_imports = [
-    'matplotlib', 'pycocotools', 'mmseg.version', 'mmcv.ops'
+    'matplotlib', 'pycocotools', 'mmcomp.version', 'mmcv.ops'
 ]
 
 # Ignore >>> when copying code
@@ -83,18 +83,18 @@ html_theme = 'pytorch_sphinx_theme'
 html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 html_theme_options = {
     'logo_url':
-        'https://mmsegmentation.readthedocs.io/en/latest/',
+        'https://mmcompmentation.readthedocs.io/en/latest/',
     'menu': [
         {
             'name':
                 'Tutorial',
             'url':
-                'https://github.com/open-mmlab/mmsegmentation/blob/master/'
-                'demo/MMSegmentation_Tutorial.ipynb'
+                'https://github.com/open-mmlab/mmcompmentation/blob/master/'
+                'demo/MMCompmentation_Tutorial.ipynb'
         },
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/mmsegmentation'
+            'url': 'https://github.com/open-mmlab/mmcompmentation'
         },
         {
             'name':

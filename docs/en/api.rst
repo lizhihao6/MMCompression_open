@@ -1,58 +1,73 @@
-mmseg.apis
+mmcomp.apis
 --------------
-.. automodule:: mmseg.apis
+.. automodule:: mmcomp.apis
     :members:
 
-mmseg.core
+mmcomp.core
 --------------
 
 seg
 ^^^^^^^^^^
-.. automodule:: mmseg.core.seg
+.. automodule:: mmcomp.core.seg
     :members:
 
 evaluation
 ^^^^^^^^^^
-.. automodule:: mmseg.core.evaluation
+.. automodule:: mmcomp.core.evaluation
     :members:
 
 utils
 ^^^^^^^^^^
-.. automodule:: mmseg.core.utils
+.. automodule:: mmcomp.core.utils
     :members:
 
-mmseg.datasets
+mmcomp.datasets
 --------------
 
 datasets
 ^^^^^^^^^^
-.. automodule:: mmseg.datasets
+.. automodule:: mmcomp.datasets
     :members:
 
 pipelines
 ^^^^^^^^^^
-.. automodule:: mmseg.datasets.pipelines
+.. automodule:: mmcomp.datasets.pipelines
     :members:
 
-mmseg.models
+mmcomp.models
 --------------
 
-segmentors
+compressors
 ^^^^^^^^^^
-.. automodule:: mmseg.models.segmentors
+.. automodule:: mmcomp.models.compressors
     :members:
 
-backbones
+vae
 ^^^^^^^^^^
-.. automodule:: mmseg.models.backbones
+.. automodule:: mmcomp.models.vae
     :members:
 
-decode_heads
+entropy_model
+^^^^^^^^^^
+.. automodule:: mmcomp.models.entropy_model
+    :members:
+
+context_model
 ^^^^^^^^^^^^
-.. automodule:: mmseg.models.decode_heads
+.. automodule:: mmcomp.models.context_model
     :members:
 
 losses
 ^^^^^^^^^^
-.. automodule:: mmseg.models.losses
+.. automodule:: mmcomp.models.losses
+    :members:
+
+quants
+^^^^^^^^^^
+.. automodule:: mmcomp.models.quants
+    :members:
+
+utils
+^^^^^^^^^^
+.. automodule:: mmcomp.models.utils
     :members:
