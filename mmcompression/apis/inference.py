@@ -3,8 +3,8 @@ import torch
 from mmcv.parallel import collate, scatter
 from mmcv.runner import load_checkpoint
 
-from mmcomp.datasets.pipelines import Compose
-from mmcomp.models import build_compressor
+from mmcompression.datasets.pipelines import Compose
+from mmcompression.models import build_compressor
 
 
 def init_compressor(config, checkpoint=None, device="cuda:0"):

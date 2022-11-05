@@ -138,7 +138,7 @@ def _test_compressor_forward(cfg_file, test_train=True):
     model['pretrained'] = None
     model['test_cfg']['mode'] = 'whole'
 
-    from mmcomp.models import build_compressor
+    from mmcompression.models import build_compressor
     compressor = build_compressor(model)
 
     # batch_size=2 for BatchNorm

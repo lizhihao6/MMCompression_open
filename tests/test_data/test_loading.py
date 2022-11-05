@@ -3,7 +3,7 @@ import os.path as osp
 
 import numpy as np
 
-from mmcomp.datasets.pipelines import LoadImageFromFile
+from mmcompression.datasets.pipelines import LoadImageFromFile
 
 
 class TestLoading(object):

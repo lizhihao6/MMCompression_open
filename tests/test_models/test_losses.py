@@ -2,7 +2,7 @@ import torch
 
 
 def test_recover_loss():
-    from mmcomp.models import build_loss
+    from mmcompression.models import build_loss
 
     # test L1 Loss
     loss_cfg = dict(type='L1Loss')

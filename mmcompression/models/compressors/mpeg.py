@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 
-from mmcomp.utils import numpy_to_img
+from mmcompression.utils import numpy_to_img
 from .base import BaseCompressor
 from ..builder import COMPRESSOR
 

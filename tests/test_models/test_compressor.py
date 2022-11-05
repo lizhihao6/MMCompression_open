@@ -3,7 +3,7 @@ import torch
 from mmcv import ConfigDict
 from torch import nn
 
-from mmcomp.models import CONTEXT, ENTROPY, LOSSES, QUANTS, VAE, build_compressor
+from mmcompression.models import CONTEXT, ENTROPY, LOSSES, QUANTS, VAE, build_compressor
 
 
 def _demo_mm_inputs(input_shape=(1, 3, 8, 16)):

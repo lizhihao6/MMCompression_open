@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 project = 'MMCompression'
 copyright = '2020-2021, OpenMMLab'
 author = 'MMCompression Authors'
-version_file = '../../mmcomp/version.py'
+version_file = '../../mmcompression/version.py'
 
 
 def get_version():
@@ -47,7 +47,7 @@ extensions = [
 ]
 
 autodoc_mock_imports = [
-    'matplotlib', 'pycocotools', 'mmcomp.version', 'mmcv.ops'
+    'matplotlib', 'pycocotools', 'mmcompression.version', 'mmcv.ops'
 ]
 
 # Ignore >>> when copying code

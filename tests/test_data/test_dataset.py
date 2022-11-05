@@ -1,11 +1,11 @@
 import os.path as osp
 from unittest.mock import MagicMock, patch
 
-from mmcomp.datasets import CustomDataset, ConcatDataset, RepeatDataset
+from mmcompression.datasets import CustomDataset, ConcatDataset, RepeatDataset
 
 
-@patch('mmcomp.datasets.CustomDataset.load_annotations', MagicMock)
-@patch('mmcomp.datasets.CustomDataset.__getitem__',
+@patch('mmcompression.datasets.CustomDataset.load_annotations', MagicMock)
+@patch('mmcompression.datasets.CustomDataset.__getitem__',
        MagicMock(side_effect=lambda idx: idx))
 def test_dataset_wrapper():
     # CustomDataset.load_annotations = MagicMock()
@@ -107,8 +107,8 @@ def test_custom_dataset():
     assert isinstance(eval_results, dict)
 
 
-@patch('mmcomp.datasets.CustomDataset.load_annotations', MagicMock)
-@patch('mmcomp.datasets.CustomDataset.__getitem__',
+@patch('mmcompression.datasets.CustomDataset.load_annotations', MagicMock)
+@patch('mmcompression.datasets.CustomDataset.__getitem__',
        MagicMock(side_effect=lambda idx: idx))
 def test_custom_dataset_random_palette_is_generated():
     dataset = CustomDataset(
@@ -117,8 +117,8 @@ def test_custom_dataset_random_palette_is_generated():
         split=MagicMock())
 
 
-@patch('mmcomp.datasets.CustomDataset.load_annotations', MagicMock)
-@patch('mmcomp.datasets.CustomDataset.__getitem__',
+@patch('mmcompression.datasets.CustomDataset.load_annotations', MagicMock)
+@patch('mmcompression.datasets.CustomDataset.__getitem__',
        MagicMock(side_effect=lambda idx: idx))
 def test_custom_dataset_custom_palette():
     dataset = CustomDataset(

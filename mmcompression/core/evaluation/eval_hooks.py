@@ -25,7 +25,7 @@ class EvalHook(Hook):
         """After train epoch hook."""
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
-        from mmcomp.apis import single_gpu_test
+        from mmcompression.apis import single_gpu_test
         runner.log_buffer.clear()
         results = single_gpu_test(runner.model, self.dataloader, show=False)
         self.evaluate(runner, results)
@@ -34,7 +34,7 @@ class EvalHook(Hook):
         """After train epoch hook."""
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
-        from mmcomp.apis import single_gpu_test
+        from mmcompression.apis import single_gpu_test
         runner.log_buffer.clear()
         results = single_gpu_test(runner.model, self.dataloader, show=False)
         self.evaluate(runner, results)
@@ -78,7 +78,7 @@ class DistEvalHook(EvalHook):
         """After train epoch hook."""
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
-        from mmcomp.apis import multi_gpu_test
+        from mmcompression.apis import multi_gpu_test
         runner.log_buffer.clear()
         results = multi_gpu_test(
             runner.model,
@@ -93,7 +93,7 @@ class DistEvalHook(EvalHook):
         """After train epoch hook."""
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
-        from mmcomp.apis import multi_gpu_test
+        from mmcompression.apis import multi_gpu_test
         runner.log_buffer.clear()
         results = multi_gpu_test(
             runner.model,

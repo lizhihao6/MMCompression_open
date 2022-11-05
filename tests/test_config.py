@@ -4,7 +4,7 @@ from os.path import dirname, exists, isdir, join, relpath
 
 from mmcv import Config
 
-from mmcomp.models import build_compressor
+from mmcompression.models import build_compressor
 
 
 def _get_config_directory():
@@ -14,8 +14,8 @@ def _get_config_directory():
         repo_dpath = dirname(dirname(__file__))
     except NameError:
         # For IPython development when this __file__ is not defined
-        import mmcomp
-        repo_dpath = dirname(dirname(mmcomp.__file__))
+        import mmcompression
+        repo_dpath = dirname(dirname(mmcompression.__file__))
     config_dpath = join(repo_dpath, 'configs')
     if not exists(config_dpath):
         raise Exception('Cannot find config path')
@@ -62,7 +62,7 @@ def test_config_data_pipeline():
         xdoctest -m tests/test_config.py test_config_build_data_pipeline
     """
     from mmcv import Config
-    from mmcomp.datasets.pipelines import Compose
+    from mmcompression.datasets.pipelines import Compose
     import numpy as np
 
     config_dpath = _get_config_directory()

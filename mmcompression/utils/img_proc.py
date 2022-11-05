@@ -1,7 +1,8 @@
 import numpy as np
+import torch
 
 
-def tensor_to_image(tensor):
+def tensor_to_image(tensor:torch.FloatTensor):
     """
     Convert a tensor to an image
     Args:
@@ -9,7 +10,7 @@ def tensor_to_image(tensor):
     Returns:
         numpy.ndarray: Image of shape (H, W, C)
     """
-    assert len(tensor.shape) == 3 and tensor.shape[0] in [1, 3]
+    assert len(tensor.shape) == 3 and tensor.shape[0] == 3
     im = tensor.detach().cpu().numpy().transpose([1, 2, 0])
     im = np.clip(im, 0, 1) * 255.
     return im.astype(np.uint8)

@@ -1,7 +1,7 @@
 import cv2
 import torch
 
-from mmcomp.utils import tensor_to_image
+from mmcompression.utils import tensor_to_image
 from .base import BaseCompressor
 from .. import builder
 from ..builder import COMPRESSOR

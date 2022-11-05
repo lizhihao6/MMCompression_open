@@ -9,11 +9,11 @@ import torch
 from mmcv.runner import init_dist
 from mmcv.utils import Config, DictAction, get_git_hash
 
-from mmcomp import __version__
-from mmcomp.apis import set_random_seed, train_compressor
-from mmcomp.datasets import build_dataset
-from mmcomp.models import build_compressor
-from mmcomp.utils import collect_env, get_root_logger
+from mmcompression import __version__
+from mmcompression.apis import set_random_seed, train_compressor
+from mmcompression.datasets import build_dataset
+from mmcompression.models import build_compressor
+from mmcompression.utils import collect_env, get_root_logger
 
 
 def parse_args():

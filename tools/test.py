@@ -7,9 +7,9 @@ from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, init_dist, load_checkpoint
 from mmcv.utils import DictAction
 
-from mmcomp.apis import multi_gpu_test, single_gpu_test
-from mmcomp.datasets import build_dataloader, build_dataset
-from mmcomp.models import build_compressor
+from mmcompression.apis import multi_gpu_test, single_gpu_test
+from mmcompression.datasets import build_dataloader, build_dataset
+from mmcompression.models import build_compressor
 
 
 def parse_args():

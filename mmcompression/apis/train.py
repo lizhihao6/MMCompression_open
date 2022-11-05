@@ -6,9 +6,9 @@ import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import build_optimizer, build_runner
 
-from mmcomp.core import DistEvalHook, EvalHook
-from mmcomp.datasets import build_dataloader, build_dataset
-from mmcomp.utils import get_root_logger
+from mmcompression.core import DistEvalHook, EvalHook
+from mmcompression.datasets import build_dataloader, build_dataset
+from mmcompression.utils import get_root_logger
 
 
 def set_random_seed(seed, deterministic=False):

@@ -10,3 +10,5 @@ scipy
 setuptools
 timm
 opencv-python
+mmcv
+torch

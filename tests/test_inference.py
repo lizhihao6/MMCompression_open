@@ -2,7 +2,7 @@ import os.path as osp
 
 import mmcv
 
-from mmcomp.apis import inference_compressor, init_compressor
+from mmcompression.apis import inference_compressor, init_compressor
 
 
 def test_test_time_inference_on_cpu():

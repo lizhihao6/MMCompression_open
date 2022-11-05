@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from mmcv.utils import build_from_cfg
 
-from mmcomp.datasets.builder import PIPELINES
+from mmcompression.datasets.builder import PIPELINES
 
 
 def test_resize():

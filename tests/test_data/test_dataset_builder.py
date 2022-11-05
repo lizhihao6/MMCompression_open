@@ -5,7 +5,7 @@ import os.path as osp
 from torch.utils.data import (DistributedSampler, RandomSampler,
                               SequentialSampler, Dataset)
 
-from mmcomp.datasets import (DATASETS, build_dataloader, build_dataset)
+from mmcompression.datasets import (DATASETS, build_dataloader, build_dataset)
 
 
 @DATASETS.register_module()

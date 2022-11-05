@@ -5,7 +5,7 @@ import mmcv
 from mmcv.utils import print_log
 from torch.utils.data import Dataset
 
-from mmcomp.utils import get_root_logger
+from mmcompression.utils import get_root_logger
 from .builder import DATASETS
 from .pipelines import Compose
 

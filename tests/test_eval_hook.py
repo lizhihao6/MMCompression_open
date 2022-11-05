@@ -9,8 +9,8 @@ import torch.nn as nn
 from mmcv.runner import obj_from_dict
 from torch.utils.data import DataLoader, Dataset
 
-from mmcomp.apis import single_gpu_test
-from mmcomp.core import DistEvalHook, EvalHook
+from mmcompression.apis import single_gpu_test
+from mmcompression.core import DistEvalHook, EvalHook
 
 
 def collate_fn(data):
@@ -125,7 +125,7 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
     return results
 
 
-@patch('mmcomp.apis.multi_gpu_test', multi_gpu_test)
+@patch('mmcompression.apis.multi_gpu_test', multi_gpu_test)
 def test_dist_eval_hook():
     with pytest.raises(TypeError):
         test_dataset = ExampleModel()
@@ -163,7 +163,7 @@ def test_dist_eval_hook():
         # test_dataset.evaluate.assert_called_with([torch.tensor([1])], logger=runner.logger)
 
 
-@patch('mmcomp.apis.multi_gpu_test', multi_gpu_test)
+@patch('mmcompression.apis.multi_gpu_test', multi_gpu_test)
 def test_dist_eval_hook_epoch():
     with pytest.raises(TypeError):
         test_dataset = ExampleModel()

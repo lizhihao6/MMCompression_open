@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmcomp import digit_version
+from mmcompression import digit_version
 
 
 def test_digit_version():

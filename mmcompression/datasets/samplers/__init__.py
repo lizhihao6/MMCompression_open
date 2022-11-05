@@ -2,7 +2,7 @@
 import torch
 from torch.utils.data import DistributedSampler as _DistributedSampler
 
-from mmcomp.core import sync_random_seed
+from mmcompression.core import sync_random_seed
 
 
 class DistributedSampler(_DistributedSampler):

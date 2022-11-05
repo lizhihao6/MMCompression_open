@@ -88,7 +88,7 @@ You will see a new image `result.png` on your current folder having compression 
 Option (b). If you install mmcompression with pip, open you python interpreter and copy&paste the following codes.
 
 ```python
-from mmcomp.apis import inference_compressor, init_compressor
+from mmcompression.apis import inference_compressor, init_compressor
 import mmcv
 
 config_file = 'nlaic_flicker2w_100k_qp_3.py'
@@ -163,8 +163,8 @@ thus we only need to install MMCV and MMSegmentation with the following commands
 **Step 3.** Verification.
 
 ```python
-import mmcomp
-print(mmcomp.__version__)
+import mmcompression
+print(mmcompression.__version__)
 # Example output: 0.24.1
 ```
 

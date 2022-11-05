@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 
-from mmcomp.apis import single_gpu_test
+from mmcompression.apis import single_gpu_test
 
 
 def collate_fn(data):
