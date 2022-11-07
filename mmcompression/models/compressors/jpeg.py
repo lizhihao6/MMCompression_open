@@ -13,10 +13,11 @@ from ..builder import COMPRESSOR
 class JPEGCompressor(BaseCompressor):
     """JPEG Compression"""
 
-    def __init__(self, qp: int):
+    def __init__(self, qp: int, **kwargs):
         """
         Args:
             qp (int): quality parameter, range [1, 100], 100 is the best quality.
+            kwargs (keyword arguments): Placeholder of train_cfg and test_cfg.
         """
         super().__init__()
         self.qp = qp
